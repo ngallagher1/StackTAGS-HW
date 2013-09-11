@@ -1,0 +1,70 @@
+import java.io.*;
+import java.util.*;
+import java.lang.*;
+import java.text.*;
+
+
+/*
+Algorithm:
+
+Use <a> info </a> as a sample tag to explain, <a> being the open tag and </a> being the closed tag.
+Use <a /> as a sample void tag
+
+Create a stack (that extends ListStack)
+Create a file to write the pairs of tags to (Tags.txt)
+Read the file into one big string (create new String arraylist)
+Go through file and search for '<'
+If you find '<!', disregard the tag
+If you come across an open tag '<a>', stick the open tag onto the stack
+If you come across a closed tag '</a>',
+	Check the stack for <a>
+		If you find a match, pop the stack
+		Print the pair of tags to Tags.txt
+
+		If you don't find a match, print an error message
+If you come across a void tag '<a />', print it to Tags.txt
+If there are any extra closed tags, print an error message
+Close files
+When entire file is anaylzed, print message "Complete"
+
+
+*/
+
+public class StacksAliceHW<E> extends ListStack<E>
+{
+	private ListStack<E> data;
+
+  	public static void main(String[] args)
+  	{
+		try
+		{
+			FileReader reader = new FileReader("Alice.h");
+			PrintWriter writer = new PrintWriter("Tags.txt");
+			Scanner in = new Scanner(reader);
+			ArrayList<String> tags = new ArrayList<String>();
+			while(in.hasNextLine())
+			{
+				String message = in.nextLine();
+				StringTokenizer tokenizer = new StringTokenizer(message, "<>");
+				while(tokenizer.hasMoreTokens())
+				{
+					String chunk = tokenizer.nextToken();
+					tags.add("\n<" + chunk + ">");
+					tags.add("\n");
+				}
+			}
+			for(String chunk : tags)
+			{
+				writer.print(chunk);
+				writer.print("\n");
+			}
+			reader.close();
+			writer.close();
+		}
+		catch(IOException e)
+		{
+			System.out.println("Error opening file: " + e);
+			System.exit(1);
+		}
+  	}
+}
