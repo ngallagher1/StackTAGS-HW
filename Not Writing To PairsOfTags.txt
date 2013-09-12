@@ -1,0 +1,164 @@
+import java.io.*;
+import java.util.*;
+import java.lang.*;
+import java.text.*;
+
+
+public class StacksAliceHW<E> extends ListStack<E>
+{
+	ListStack<E> tagData;
+
+  	public static void main(String[] args)
+  	{
+		try
+		{
+			//Create files, one to print all tags to initially, and one to print pairs of tags once they are popped from the stack
+			FileReader reader = new FileReader("Alice.h");
+			FileReader readerTags = new FileReader("Tags.txt");
+			PrintWriter writer = new PrintWriter("Tags.txt");
+			PrintWriter writerPairs = new PrintWriter("PairsOfTags.txt");
+			Scanner in = new Scanner(reader);
+			Scanner inTags = new Scanner(readerTags);
+			ArrayList<String> tags = new ArrayList<String>();
+			ListStack tagData = new ListStack();
+			//Read file line by line
+			while(in.hasNextLine())
+			{
+				//For each line, count how many times '<' occurs
+				String s = in.nextLine();
+				int counter = 0;
+				for(int i = 0; i < s.length(); i++)
+				{
+					if(s.charAt(i) == '<')
+						counter ++;
+				}
+                int lastLocation = 0;
+                //While the line has more '<', make the inside of the tag into a substring
+				while(counter != 0)
+				{
+					//LastLocation keeps track of where we should be searching for new '<'
+					//If LastLocation = 0, start searching at the beginning of the line
+					if (lastLocation == 0)
+					{
+						int startPosition = s.indexOf("<");
+						int endPosition = s.indexOf(">", startPosition);
+						String subS = s.substring(startPosition, endPosition);
+						//If the tag is a comment tag (<!), print an error in place of the tag
+						if ((s.charAt(s.indexOf("<") + 1)) == '!')
+						{
+							writer.println(s.replace(subS,"Error: Comment Tag. Disregard Tag"));
+							lastLocation = endPosition;
+							counter --;
+						}
+						//Otherwise, print the tag to the file Tags.txt
+						else
+						{
+							writer.println(subS + ">");
+							lastLocation = endPosition;
+							counter --;
+						}
+
+					}
+					//If lastLocation does not equal 0, start searching from the endPosition of the last tag
+					else
+					{
+						int startPosition = s.indexOf("<",lastLocation);
+						int endPosition = s.indexOf(">", startPosition);
+						String subS = s.substring(startPosition, endPosition);
+						//If the tag is a comment tag (<!), print an error in place of the tag
+						if ((s.charAt(s.indexOf("<") + 1)) == '!')
+						{
+							writer.println(s.replace(subS,"Error: Comment Tag. Disregard Tag"));
+							lastLocation = endPosition;
+							counter --;
+						}
+						//Otherwise, print the tag to the file Tags.txt
+						else
+						{
+							writer.println(subS + ">");
+							lastLocation = endPosition;
+							counter --;
+						}
+					}
+
+				}
+			}
+			reader.close();
+			writer.close();
+			//Go through file of tags line by line
+			while(inTags.hasNextLine())
+			{
+				String tag = inTags.nextLine();
+				for(int i = 0; i < tag.length(); i++)
+				{
+					//If there is not a '<' in the first index, print error message and move to the next line
+					if(tag.charAt(0) != '<')
+					{
+						writerPairs.println("Error: the tag must have been a comment");
+					}
+					//Otherwise, continue analyzing the line
+					else
+					{
+						//If the tag is an open tag (the second index and second to last index will not be '/')
+						//Push the tag onto the stack
+						if(tag.charAt(1) != '/' && tag.charAt(tag.length()-1) != '/')
+						{
+							tagData.push(tag);
+						}
+						//If the tag is complete or void (character in the second to last index on the line is '/')
+						if(tag.charAt(tag.length()-1) == '/')
+						{
+							//State that the tag is complete or void, and print it to the file PairsOfTags
+							writerPairs.print("Complete (void) tag: " + tag);
+						}
+						//If the tag is a closed tag (second character in the line is '/')
+						if(tag.charAt(tag.indexOf(1)) == '/')
+						{
+							//Assign the tag to a variable to hold it
+							String hold = tag;
+
+							//Change the tag so that it reads the same but WITHOUT the second character being "/"
+							StringBuilder sb = new StringBuilder(tag);
+							sb.deleteCharAt(1);
+							String resultString = sb.toString();
+
+							//Check the stack for this changed tag
+							//If you find a match, pop the tag out, print both the open and closed tags to PairsOfTags.txt
+							if(tagData.peek() == resultString)
+							{
+								Object poppedTag = tagData.pop();
+								String stringTag = poppedTag.toString();
+								writerPairs.println("Open tag: " + stringTag + "  Closed tag: " + hold);
+							}
+							//If you don't find a match, print an error message to PairsOfTags.txt
+							else
+							{
+								writerPairs.println("No match found for " + hold);
+							}
+						}
+
+					}
+
+				}
+			}
+			//If there are still open tags in the stack, print error message for each one
+			while(!tagData.isEmpty())
+			{
+				Object extra = tagData.pop();
+				String extraString = extra.toString();
+				writerPairs.println("Error: The following open tag did not have a match: " + extraString);
+			}
+
+			//Close files
+			readerTags.close();
+			writerPairs.close();
+		}
+		catch(IOException e)
+		{
+			System.out.println("Error opening file: " + e);
+			System.exit(1);
+		}
+
+
+  	}
+}
