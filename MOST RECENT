@@ -60,10 +60,6 @@ public class StacksAliceHW<E> extends ListStack<E>
 			PrintWriter writer = new PrintWriter("Tags.txt");
 			Scanner in = new Scanner(reader);
 
-			FileReader readerTags = new FileReader("Tags.txt");
-			PrintWriter writerPairs = new PrintWriter("PairsOfTags.txt");
-			Scanner inTags = new Scanner(readerTags);
-
 			ArrayList<String> tags = new ArrayList<String>();
 			ListStack tagData = new ListStack();
 			//Read file line by line
@@ -131,10 +127,11 @@ public class StacksAliceHW<E> extends ListStack<E>
 			//Close reader and writer that are done being used
 			reader.close();
 			writer.close();
+
+			FileReader readerTags = new FileReader("Tags.txt");
+			PrintWriter writerPairs = new PrintWriter("PairsOfTags.txt");
+			Scanner inTags = new Scanner(readerTags);
 			//Go through file of tags line by line
-//******* PROBLEM IS BELOW. when I just do a simple while loop printing the tags to writerPairs, it works.
-//        But now when I put the full code below in, it is compiling fine but it says "Note: Recompile with -Xlint:unchecked for details,
-//        when I run it I have an out of bounds error of -1, and not writing anything to writerPairs
 			while(inTags.hasNextLine())
 			{
 				String tag = inTags.nextLine();
