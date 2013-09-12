@@ -1,0 +1,109 @@
+import java.io.*;
+import java.util.*;
+import java.lang.*;
+import java.text.*;
+
+
+public class StacksAliceHW<E> extends ListStack<E>
+{
+	ListStack<E> tagData;
+
+  	public static void main(String[] args)
+  	{
+		try
+		{
+			//Create files, one to print all tags to initially, and one to print pairs of tags once they are popped from the stack
+			FileReader reader = new FileReader("Alice.h");
+			FileReader readerTags = new FileReader("Tags.txt");
+			PrintWriter writer = new PrintWriter("Tags.txt");
+			PrintWriter writerPairs = new PrintWriter("PairsOfTags.txt");
+			Scanner in = new Scanner(reader);
+			Scanner inTags = new Scanner(readerTags);
+			ArrayList<String> tags = new ArrayList<String>();
+			ListStack tagData = new ListStack();
+			//Read file line by line
+			while(in.hasNextLine())
+			{
+				//For each line, count how many times '<' occurs
+				String s = in.nextLine();
+				int counter = 0;
+				for(int i = 0; i < s.length(); i++)
+				{
+					if(s.charAt(i) == '<')
+						counter ++;
+				}
+                int lastLocation = 0;
+                //While the line has more '<', make the inside of the tag into a substring
+				while(counter != 0)
+				{
+					//LastLocation keeps track of where we should be searching for new '<'
+					//If LastLocation = 0, start searching at the beginning of the line
+					if (lastLocation == 0)
+					{
+						int startPosition = s.indexOf("<");
+						int endPosition = s.indexOf(">", startPosition);
+						String subS = s.substring(startPosition, endPosition);
+						//If the tag is a comment tag (<!), print an error in place of the tag
+						if ((s.charAt(s.indexOf("<") + 1)) == '!')
+						{
+							writer.println(s.replace(subS,"Error: Comment Tag. Disregard Tag"));
+							lastLocation = endPosition;
+							counter --;
+						}
+						//Otherwise, print the tag to the file Tags.txt
+						else
+						{
+							writer.println(subS + ">");
+							lastLocation = endPosition;
+							counter --;
+						}
+
+					}
+					//If lastLocation does not equal 0, start searching from the endPosition of the last tag
+					else
+					{
+						int startPosition = s.indexOf("<",lastLocation);
+						int endPosition = s.indexOf(">", startPosition);
+						String subS = s.substring(startPosition, endPosition);
+						//If the tag is a comment tag (<!), print an error in place of the tag
+						if ((s.charAt(s.indexOf("<") + 1)) == '!')
+						{
+							writer.println(s.replace(subS,"Error: Comment Tag. Disregard Tag"));
+							lastLocation = endPosition;
+							counter --;
+						}
+						//Otherwise, print the tag to the file Tags.txt
+						else
+						{
+							writer.println(subS + ">");
+							lastLocation = endPosition;
+							counter --;
+						}
+					}
+
+				}
+
+				//Go through file of tags line by line
+				//****I have more code here, but to just test to see if the scanner works, I'm keeping it simple****
+				while(inTags.hasNextLine())
+				{
+					String tag = inTags.nextLine();
+					System.out.println(tag);
+				}
+
+			}
+			//Close files
+			reader.close();
+			readerTags.close();
+			writer.close();
+			writerPairs.close();
+		}
+		catch(IOException e)
+		{
+			System.out.println("Error opening file: " + e);
+			System.exit(1);
+		}
+
+
+  	}
+}
