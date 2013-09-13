@@ -135,59 +135,59 @@ public class StacksAliceHW<E> extends ListStack<E>
 			while(inTags.hasNextLine())
 			{
 				String tag = inTags.nextLine();
-				writerPairs.println(tag);
-				for(int i = 0; i < tag.length(); i++)
-				{
+
 					//If there is not a '<' in the first index, print error message and move to the next line
 					if(tag.charAt(0) != '<')
 					{
 						writerPairs.println("Error: the tag must have been a comment");
 					}
-
 					//Otherwise, continue analyzing the line
 					else
 					{
-						//If the tag is an open tag (the second index and second to last index will not be '/')
-						//Push the tag onto the stack
-						if(tag.charAt(1) != '/' && tag.charAt(tag.length()-2) != '/')
-						{
-							tagData.push(tag);
-						}
-						//If the tag is complete or void (character in the second to last index on the line is '/')
-						if(tag.charAt(tag.length()-2) == '/')
-						{
-							//State that the tag is complete or void, and print it to the file PairsOfTags
-							writerPairs.print("Complete (void) tag: " + tag);
-						}
-						//If the tag is a closed tag (second character in the line is '/')
-						if(tag.charAt(tag.indexOf(1)) == '/')
-						{
-							//Assign the tag to a variable to hold it
-							String hold = tag;
-
-							//Change the tag so that it reads the same but WITHOUT the second character being "/"
-							StringBuilder sb = new StringBuilder(tag);
-							sb.deleteCharAt(1);
-							String resultString = sb.toString();
-
-							//Check the stack for this changed tag
-							//If you find a match, pop the tag out, print both the open and closed tags to PairsOfTags.txt
-							if(tagData.peek() == resultString)
+							//If the tag is an open tag (the second index and second to last index will not be '/')
+							//Push the tag onto the stack
+							if(tag.charAt(1) != '/' && tag.charAt(tag.length()-2) != '/')
 							{
-								Object poppedTag = tagData.pop();
-								String stringTag = poppedTag.toString();
-								writerPairs.println("Open tag: " + stringTag + "  Closed tag: " + hold);
+								tagData.push(tag);
+
 							}
-							//If you don't find a match, print an error message to PairsOfTags.txt
-							else
+							//If the tag is complete or void (character in the second to last index on the line is '/')
+							if(tag.charAt(tag.length()-2) == '/')
 							{
-								writerPairs.println("No match found for " + hold);
+								//State that the tag is complete or void, and print it to the file PairsOfTags
+								writerPairs.println("Complete (void) tag: " + tag);
+							}
+							//If the tag is a closed tag (second character in the line is '/')
+							if(tag.charAt(1) == '/')
+							{
+								//Assign the tag to a variable to hold it
+								String hold = tag;
+
+								//Change the tag so that it reads the same but WITHOUT the second character being "/"
+								StringBuffer sb = new StringBuffer(tag);
+								sb.deleteCharAt(1);
+								sb.toString();
+
+								//Check the stack for this changed tag
+								//If you find a match, pop the tag out, print both the open and closed tags to PairsOfTags.txt
+								Object peek = tagData.peek();
+								peek.toString();
+// PROBLEM: ******************************************
+								if(peek == sb)
+								{
+									Object poppedTag = tagData.pop();
+									poppedTag.toString();
+									writerPairs.println("Open tag: " + poppedTag + "  Closed tag: " + hold);
+								}
+								//If you don't find a match, print an error message to PairsOfTags.txt
+								else
+								{
+									writerPairs.println("No match found for " + hold);
+								}
 							}
 						}
 
-					}
 
-				}
 			}
 			//If there are still open tags in the stack, print error message for each one
 			while(!tagData.isEmpty())
