@@ -10,21 +10,16 @@ Algorithm:
 Use <a> info </a> as a sample tag to explain, <a> being the open tag and </a> being the closed tag.
 Use <a /> as a sample void tag
 
-Create a stack (that extends ListStack)
-Create a file to write the tags to (Tags.txt)
+Create a stack (ListStack)
 Create a file to write the final pairs of tags to (PairsOfTags.Txt)
-Read the file into one big string (create new String arraylist)
+Read the file line by line
 Go through each line and search for '<'
 Create variable, lastLocation, to keep track of where we should be searching for new '<'
 If lastLocation = 0, start searching at the beginning of the line
 If lastLocation does not equal 0, start searching from the endPosition of the last tag
 If you find '<!', disregard the tag and print error message
-Otherwise, print the tag to Tags.txt
-Close reader and writer
+Otherwise, continue to analyze the tag:
 
-Search through the tags, one by one, in Tags.txt
-Each tag will be on its own line, so read through the file line by line
-If there is not a '<' in the first index, print error message and move to the next line
 If the tag is an open tag (the second index and second to last index will not be '/')
 	Push the tag onto the stack
 If the tag is complete or void (character in the second to last index on the line is '/'),
@@ -41,9 +36,7 @@ If the tag is a closed tag (second character in the line is '/'),
 
 If there are still open tags in the stack, print error message with how many are left
 If there are any extra closed tags, print an error message
-Close remaining reader and writer
-When entire file is anaylzed, print message "Complete"
-
+Close reader and writer
 
 */
 
@@ -55,125 +48,82 @@ public class StacksAliceHW<E> extends ListStack<E>
   	{
 		try
 		{
-			//Create files, one to print all tags to initially, and one to print pairs of tags once they are popped from the stack
+			//Create file to print pairs of tags once they are popped from the stack
+			//Create reader to read file Alice.h
 			FileReader reader = new FileReader("Alice.h");
-			PrintWriter writer = new PrintWriter("Tags.txt");
+			PrintWriter writerPairs = new PrintWriter("PairsOfTags.txt");
 			Scanner in = new Scanner(reader);
 
-			ArrayList<String> tags = new ArrayList<String>();
-			ListStack tagData = new ListStack();
+			ListStack<String> tagData = new ListStack<String>();
+
 			//Read file line by line
 			while(in.hasNextLine())
 			{
-				//For each line, count how many times '<' occurs
-				String s = in.nextLine();
+				//For each line, count how many times '<' occurs, as each occurence signals the start of a new tag
+				String tag = in.nextLine();
+				tag = tag.trim();
 				int counter = 0;
-				for(int i = 0; i < s.length(); i++)
+				//Each time you come across a '<', increase counter by one
+				//This will keep count of how many tags are on one line
+				for(int i = 0; i < tag.length(); i++)
 				{
-					if(s.charAt(i) == '<')
+					if(tag.charAt(i) == '<')
 						counter ++;
 				}
                 int lastLocation = 0;
                 //While the line has more '<', make the inside of the tag into a substring
 				while(counter != 0)
 				{
-					//LastLocation keeps track of where we should be searching for new '<'
+					//LastLocation keeps track of where we should be searching for a new '<'
 					//If LastLocation = 0, start searching at the beginning of the line
 					if (lastLocation == 0)
 					{
-						int startPosition = s.indexOf("<");
-						int endPosition = s.indexOf(">", startPosition);
-						String subS = s.substring(startPosition, endPosition);
+						int startPosition = tag.indexOf("<");
+						int endPosition = tag.indexOf(">", startPosition);
+						String subS = tag.substring(startPosition, endPosition) + ">";
+
 						//If the tag is a comment tag (<!), print an error in place of the tag
-						if ((s.charAt(s.indexOf("<") + 1)) == '!')
+						if ((subS.charAt(subS.indexOf("<") + 1)) == '!')
 						{
-							writer.println(s.replace(subS,"Error: Comment Tag. Disregard Tag"));
+							writerPairs.println("Error: the tag must have been a comment");
 							lastLocation = endPosition;
 							counter --;
 						}
-						//Otherwise, print the tag to the file Tags.txt
+						//Otherwise, continue to analyze the tag
 						else
 						{
-							writer.println(subS + ">");
-							lastLocation = endPosition;
-							counter --;
-						}
-
-					}
-					//If lastLocation does not equal 0, start searching from the endPosition of the last tag
-					else
-					{
-						int startPosition = s.indexOf("<",lastLocation);
-						int endPosition = s.indexOf(">", startPosition);
-						String subS = s.substring(startPosition, endPosition);
-						//If the tag is a comment tag (<!), print an error in place of the tag
-						if ((s.charAt(s.indexOf("<") + 1)) == '!')
-						{
-							writer.println(s.replace(subS,"Error: Comment Tag. Disregard Tag"));
-							lastLocation = endPosition;
-							counter --;
-						}
-						//Otherwise, print the tag to the file Tags.txt
-						else
-						{
-							writer.println(subS + ">");
-							lastLocation = endPosition;
-							counter --;
-						}
-					}
-
-				}
-			}
-			//Close reader and writer that are done being used
-			reader.close();
-			writer.close();
-
-			FileReader readerTags = new FileReader("Tags.txt");
-			PrintWriter writerPairs = new PrintWriter("PairsOfTags.txt");
-			Scanner inTags = new Scanner(readerTags);
-			//Go through file of tags line by line
-			while(inTags.hasNextLine())
-			{
-				String tag = inTags.nextLine();
-
-					//If there is not a '<' in the first index, print error message and move to the next line
-					if(tag.charAt(0) != '<')
-					{
-						writerPairs.println("Error: the tag must have been a comment");
-					}
-					//Otherwise, continue analyzing the line
-					else
-					{
-							//If the tag is an open tag (the second index and second to last index will not be '/')
+							//If the tag is an open tag (the second index and second to last index will NOT be '/')
 							//Push the tag onto the stack
-							if(tag.charAt(1) != '/' && tag.charAt(tag.length()-2) != '/')
+							if(subS.charAt(1) != '/' && subS.charAt(subS.length()-2) != '/')
 							{
-								tagData.push(tag);
-
+								tagData.push(subS);
 							}
 							//If the tag is complete or void (character in the second to last index on the line is '/')
-							if(tag.charAt(tag.length()-2) == '/')
+							//State that the tag is complete or void, and print it to the file PairsOfTags
+							if(subS.charAt(subS.length()-2) == '/')
 							{
-								//State that the tag is complete or void, and print it to the file PairsOfTags
-								writerPairs.println("Complete (void) tag: " + tag);
+								writerPairs.println("Complete (void) tag: " + subS);
 							}
 							//If the tag is a closed tag (second character in the line is '/')
-							if(tag.charAt(1) == '/')
+							if(subS.charAt(1) == '/')
 							{
 								//Assign the tag to a variable to hold it
-								String hold = tag;
+								String hold = subS;
 
 								//Change the tag so that it reads the same but WITHOUT the second character being "/"
-								StringBuffer sb = new StringBuffer(tag);
+								StringBuffer sb = new StringBuffer(subS);
 								sb.deleteCharAt(1);
-								sb.toString();
 
-								//Check the stack for this changed tag
+								//Check the stack for this changed tag, split it where it has a space
+								//If the size of the array is greater than 1, add ">" onto the end of the array
+								//It will then look the same as its corresponding open tag
+								String peek = tagData.peek();
+								String t[] = peek.split(" ");
+								if(t.length > 1)
+									peek = t[0] + ">";
+
 								//If you find a match, pop the tag out, print both the open and closed tags to PairsOfTags.txt
-								Object peek = tagData.peek();
-								peek.toString();
-// PROBLEM: ******************************************
-								if(peek == sb)
+								if(peek.equals(sb.toString()))
 								{
 									Object poppedTag = tagData.pop();
 									poppedTag.toString();
@@ -185,10 +135,82 @@ public class StacksAliceHW<E> extends ListStack<E>
 									writerPairs.println("No match found for " + hold);
 								}
 							}
+							lastLocation = endPosition;
+							counter --;
 						}
 
+					}
+					//If lastLocation does not equal 0, start searching from the endPosition of the last tag
+					else
+					{
+						int startPosition = tag.indexOf("<",lastLocation);
+						int endPosition = tag.indexOf(">", startPosition);
+						String subS = tag.substring(startPosition, endPosition) + ">";
+						//If the tag is a comment tag (<!), print an error in place of the tag
+						if ((subS.charAt(subS.indexOf("<") + 1)) == '!')
+						{
+							writerPairs.println("Error: the tag must have been a comment");
+							lastLocation = endPosition;
+							counter --;
+						}
+						//Otherwise, continue to analyze the tag
+						else
+						{
+							//If the tag is an open tag (the second index and second to last index will not be '/')
+							//Push the tag onto the stack
+							if(subS.charAt(1) != '/' && subS.charAt(subS.length()-2) != '/')
+							{
+								tagData.push(subS);
 
+							}
+							//If the tag is complete or void (character in the second to last index on the line is '/')
+							//State that the tag is complete or void, and print it to the file PairsOfTags
+							if(subS.charAt(subS.length()-2) == '/')
+							{
+								writerPairs.println("Complete (void) tag: " + subS);
+							}
+							//If the tag is a closed tag (second character in the line is '/')
+							if(subS.charAt(1) == '/')
+							{
+								//Assign the tag to a variable to hold it
+								String hold = subS;
+
+								//Change the tag so that it reads the same but WITHOUT the second character being "/"
+								StringBuffer sb = new StringBuffer(subS);
+								sb.deleteCharAt(1);
+
+								//Check the stack for this changed tag, split it where it has a space
+								//If the size of the array is greater than 1, add ">" onto the end of the array
+								//It will then look the same as its corresponding open tag
+								String peek = tagData.peek();
+								String t[] = peek.split(" ");
+								if(t.length > 1)
+									peek = t[0] + ">";
+
+								//If you find a match, pop the tag out, print both the open and closed tags to PairsOfTags.txt
+								if(peek.equals(sb.toString()))
+								{
+									Object poppedTag = tagData.pop();
+									poppedTag.toString();
+									writerPairs.println("Open tag: " + poppedTag + "  Closed tag: " + hold);
+								}
+								//If you don't find a match, print an error message to PairsOfTags.txt
+								else
+								{
+									writerPairs.println("No match found for " + hold);
+								}
+							}
+							lastLocation = endPosition;
+							counter --;
+						}
+					}
+
+				}
 			}
+			//Close reader and writer
+			reader.close();
+			writerPairs.close();
+
 			//If there are still open tags in the stack, print error message for each one
 			while(!tagData.isEmpty())
 			{
@@ -196,10 +218,6 @@ public class StacksAliceHW<E> extends ListStack<E>
 				String extraString = extra.toString();
 				writerPairs.println("Error: The following open tag did not have a match: " + extraString);
 			}
-
-			//Close remaining reader and writer
-			readerTags.close();
-			writerPairs.close();
 
 		}
 
